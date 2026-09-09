@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="记账本">
+<meta name="theme-color" content="#3b82f6">
+<title>家庭记账本</title>
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,{&quot;name&quot;:&quot;%E5%AE%B6%E5%BA%AD%E8%AE%B0%E8%B4%A6%E6%9C%AC&quot;,&quot;short_name&quot;:&quot;%E8%AE%B0%E8%B4%A6%E6%9C%AC&quot;,&quot;description&quot;:&quot;%E5%8F%AF%E5%90%8C%E6%AD%A5%E7%9A%84%E5%AE%B6%E5%BA%AD%E8%AE%B0%E8%B4%A6%E6%9C%AC&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;orientation&quot;:&quot;any&quot;,&quot;background_color&quot;:&quot;#f5f7fa&quot;,&quot;theme_color&quot;:&quot;#3b82f6&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2740%27 fill=%27%233b82f6%27/%3E%3Ctext x=%2796%27 y=%27130%27 font-size=%27120%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27 font-weight=%27bold%27%3E%C2%A5%3C/text%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; height: 100%; overflow: hidden; }
+  input, button, textarea { font-family: inherit; font-size: 15px; }
+  button { cursor: pointer; border: none; outline: none; }
+
+  /* ===== Login ===== */
+  #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .login-box { background: white; padding: 32px 28px; border-radius: 20px; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); text-align: center; }
+  .login-box h1 { margin: 0 0 8px; color: #3b82f6; font-size: 26px; }
+  .login-box p { color: #6b7280; margin: 0 0 24px; font-size: 14px; }
+  .login-box input { width: 100%; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 14px; font-size: 16px; }
+  .login-box input:focus { border-color: #3b82f6; outline: none; }
+  .login-box button { width: 100%; padding: 13px; background: #3b82f6; color: white; border-radius: 10px; font-size: 16px; font-weight: 600; }
+  .login-box .toggle { margin-top: 14px; color: #3b82f6; font-size: 14px; background: none; padding: 4px; }
+  .login-msg { color: #ef4444; font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+  /* ===== App layout ===== */
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  .topbar { background: white; border-bottom: 1px solid #e5e7eb; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
+  .topbar .title { font-weight: 700; color: #3b82f6; font-size: 17px; margin-right: 6px; white-space: nowrap; }
+  .month-nav { display: flex; align-items: center; gap: 6px; background: #eff6ff; border-radius: 10px; padding: 4px 8px; }
+  .month-nav button { background: #3b82f6; color: white; width: 30px; height: 28px; border-radius: 7px; font-size: 18px; line-height: 1; }
+  .month-nav span { font-weight: 600; font-size: 15px; min-width: 70px; text-align: center; }
+  .month-nav select { border: 1px solid #dbeafe; border-radius: 6px; padding: 3px 4px; background: white; }
+  .actions { display: flex; gap: 6px; margin-left: auto; }
+  .btn { padding: 7px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: opacity 0.15s; }
+  .btn:active { opacity: 0.7; }
+  .btn-primary { background: #3b82f6; color: white; }
+  .btn-success { background: #10b981; color: white; }
+  .btn-danger { background: #ef4444; color: white; }
+  .btn-warn { background: #f59e0b; color: white; }
+  .btn-ghost { background: #f3f4f6; color: #374151; }
+
+  .main { flex: 1; overflow: auto; padding: 12px; display: flex; gap: 12px; }
+
+  /* ===== Table ===== */
+  .table-wrap { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); min-width: 0; position: relative; }
+  .table-scroll { overflow: auto; max-height: calc(100vh - 120px); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  thead th { background: #3b82f6; color: white; padding: 10px 8px; font-size: 14px; font-weight: 600; position: sticky; top: 0; z-index: 5; text-align: left; }
+  thead th.col-check { width: 44px; text-align: center; }
+  thead th.col-date { width: 100px; }
+  thead th.col-amount { width: 100px; }
+  tbody td { border-bottom: 1px solid #f1f5f9; padding: 0; }
+  tbody td .cell { width: 100%; padding: 9px 8px; min-height: 38px; outline: none; background: transparent; border: 1px solid transparent; }
+  tbody td .cell:focus { background: #eff6ff; border-color: #93c5fd; }
+  tbody tr.selected { background: #fef2f2; }
+  td.check-cell { text-align: center; }
+  .row-check { width: 18px; height: 18px; accent-color: #ef4444; }
+  .amount-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  .add-row { background: #f9fafb; color: #3b82f6; padding: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; }
+  .add-row:hover { background: #eff6ff; }
+  .total-row { background: #fef3c7 !important; font-weight: 700; }
+  .total-row td { padding: 10px 8px; border-top: 2px solid #f59e0b; }
+
+  /* ===== Compare panel ===== */
+  .compare { width: 280px; background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; position: sticky; top: 0; }
+  .compare h3 { margin: 0 0 10px; color: #374151; font-size: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 6px; }
+  .income-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .income-row label { font-size: 13px; color: #6b7280; }
+  .income-row input { flex: 1; padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 6px; width: 100px; text-align: right; }
+  .exp-list { list-style: none; padding: 0; margin: 0 0 10px; }
+  .exp-list li { display: flex; gap: 4px; margin-bottom: 5px; align-items: center; }
+  .exp-list input { padding: 5px 6px; border: 1px solid #e5e7eb; border-radius: 5px; font-size: 13px; }
+  .exp-list .exp-name { flex: 1; min-width: 0; }
+  .exp-list .exp-amt { width: 70px; text-align: right; }
+  .result-box { background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 10px; padding: 12px; text-align: center; margin-top: 10px; }
+  .result-box .label { font-size: 12px; opacity: 0.9; }
+  .result-box .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+  .result-box.negative { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .breakdown { font-size: 11px; color: #d1fae5; margin-top: 6px; line-height: 1.5; }
+
+  /* ===== Stats modal ===== */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+  .modal.show { display: flex; }
+  .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; overflow: auto; padding: 20px; }
+  .modal-content h2 { margin: 0 0 14px; color: #3b82f6; }
+  .stat-table { width: 100%; border-collapse: collapse; }
+  .stat-table th, .stat-table td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; text-align: left; font-size: 14px; }
+  .stat-table th { background: #f8fafc; color: #6b7280; }
+  .stat-table td:last-child, .stat-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .close-btn { position: absolute; top: 16px; right: 16px; background: #f3f4f6; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; color: #6b7280; }
+
+  /* ===== Approval ===== */
+  .approval-drawer { position: fixed; top: 0; right: -110%; width: 100%; max-width: 440px; height: 100%; background: #f5f7fa; z-index: 2000; transition: right 0.3s; box-shadow: -4px 0 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+  .approval-drawer.open { right: 0; }
+  .appr-header { background: #3b82f6; color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .appr-header button { background: rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 8px; }
+  .appr-header h3 { margin: 0; flex: 1; }
+  .appr-body { flex: 1; overflow: auto; padding: 14px; }
+  .appr-section { background: white; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  .appr-section h4 { margin: 0 0 10px; color: #374151; font-size: 14px; }
+  .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .img-thumb { aspect-ratio: 1; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .img-thumb .add { font-size: 28px; color: #9ca3af; cursor: pointer; }
+  .img-thumb .del { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; line-height: 1; }
+  .appr-section input, .appr-section textarea { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+  .appr-section textarea { resize: vertical; min-height: 60px; }
+  .approvers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .approver-chip { display: flex; align-items: center; gap: 4px; background: #eff6ff; padding: 6px 10px; border-radius: 16px; font-size: 13px; }
+  .approver-chip input { width: 70px; border: none; background: transparent; padding: 0; margin: 0; font-size: 13px; }
+  .approver-chip .remove { color: #ef4444; font-weight: bold; cursor: pointer; }
+  .add-approver { background: #f3f4f6; color: #3b82f6; padding: 6px 12px; border-radius: 16px; font-size: 13px; }
+  .share-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+  .share-btn { flex: 1; min-width: 80px; padding: 10px; border-radius: 10px; color: white; font-size: 13px; font-weight: 500; }
+  .share-btn.wechat { background: #07c160; }
+  .share-btn.douyin { background: #000; }
+  .share-btn.copy { background: #6b7280; }
+
+  .approve-list .appr-item { background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+  .approve-list .appr-item .who { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .approve-list .appr-item .reason { font-size: 13px; color: #6b7280; }
+  .approve-list .appr-item .decision { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .approve-list .decision.approve { background: #d1fae5; color: #065f46; }
+  .approve-list .decision.reject { background: #fee2e2; color: #991b1b; }
+  .approve-list .decision.pending { background: #fef3c7; color: #92400e; }
+
+  /* ===== QR modal ===== */
+  .qr-area { text-align: center; }
+  .qr-area #qrcode { display: inline-block; padding: 16px; background: white; border-radius: 12px; }
+  .qr-area p { color: #6b7280; margin: 10px 0; font-size: 13px; }
+  .qr-area a { color: #3b82f6; word-break: break-all; }
+  .install-tip { background: #eff6ff; border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #1e40af; line-height: 1.6; text-align: left; }
+
+  /* ===== Toast ===== */
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 20px; border-radius: 8px; z-index: 3000; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 760px) {
+    .main { flex-direction: column; padding: 8px; }
+    .compare { width: 100%; position: static; }
+    .topbar { padding: 6px 8px; }
+    .btn { padding: 6px 10px; font-size: 13px; }
+    .title { font-size: 15px; }
+    thead th { font-size: 12px; padding: 8px 4px; }
+  }
+</style>
+<style id="imt-injected-styles">
+      /* 翻译加载器样式 */
+      .imt-loading-indicator {
+        vertical-align: middle !important;
+        width: 10px !important;
+        height: 10px !important;
+        display: inline-block !important;
+        margin: 0 4px !important;
+        border: 2px rgba(221, 244, 255, 0.6) solid !important;
+        border-top: 2px rgba(0, 0, 0, 0.375) solid !important;
+        border-left: 2px rgba(0, 0, 0, 0.375) solid !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        -webkit-animation: imt-loading-animation 0.6s infinite linear !important;
+        animation: imt-loading-animation 0.6s infinite linear !important;
+      }
+
+      @-webkit-keyframes imt-loading-animation {
+        from {
+          -webkit-transform: rotate(0deg);
+        }
+
+        to {
+          -webkit-transform: rotate(359deg);
+        }
+      }
+
+      @keyframes imt-loading-animation {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(359deg);
+        }
+      }
+      .se_imt_html {
+        height: 100%;
+      }
+      .se_imt_html body {
+        position: relative;
+        min-height: 100%;
+        top: 40px;
+      }
+      @media print {
+        #imt-webext {
+          display: none !important;
+        }
+      }
+    </style></head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen" style="display: none;">
+  <div class="login-box">
+    <h1>家庭记账本</h1>
+    <p>安全登录，数据长久保存</p>
+    <div class="login-msg" id="login-msg"></div>
+    <input type="password" id="pwd-input" placeholder="请输入密码" autocomplete="current-password">
+    <button id="login-btn">登 录</button>
+    <button class="toggle" id="toggle-register">首次使用？设置密码</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" style="display: flex;">
+  <div class="topbar">
+    <span class="title">¥ 记账本</span>
+    <div class="month-nav">
+      <button id="prev-month" title="上一月">‹</button>
+      <span id="month-label">2026年7月</span>
+      <button id="next-month" title="下一月">›</button>
+      <select id="month-select" title="跳转月份"><option value="2026-07" selected="">2026-07</option><option value="2026-08">2026-08</option><option value="2026-09">2026-09</option><option value="2026-10">2026-10</option><option value="2026-11">2026-11</option><option value="2026-12">2026-12</option><option value="2027-01">2027-01</option><option value="2027-02">2027-02</option><option value="2027-03">2027-03</option></select>
+    </div>
+    <div class="actions">
+      <button class="btn btn-success" id="save-btn">💾 保存</button>
+      <button class="btn btn-danger" id="del-btn">🗑 删除选中</button>
+      <button class="btn btn-warn" id="stat-btn">📊 统计</button>
+      <button class="btn btn-primary" id="appr-btn">✅ 审批</button>
+      <button class="btn btn-ghost" id="qr-btn">📱 安装</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table id="account-table">
+          <thead>
+            <tr>
+              <th class="col-check">☑</th>
+              <th class="col-date">日期</th>
+              <th>事项</th>
+              <th>明细</th>
+              <th class="col-amount">金额</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"><tr data-idx="0">
+    <td class="check-cell"><input type="checkbox" class="row-check"></td>
+    <td><div class="cell" data-field="date">2026.7.6</div></td>
+    <td><div class="cell" data-field="item">肉</div></td>
+    <td><div class="cell" data-field="detail">猪头</div></td>
+    <td><div class="cell amount-cell" data-field="amount">47</div></td>
+    <td><div class="cell" data-field="note"></div></td>
+  </tr><tr data-idx="1">
+    <td class="check-cell"><input type="checkbox" class="row-check"></td>
+    <td><div class="cell" data-field="date">2026.8.9</div></td>
+    <td><div class="cell" data-field="item">牛肉</div></td>
+    <td><div class="cell" data-field="detail">头</div></td>
+    <td><div class="cell amount-cell" data-field="amount">98</div></td>
+    <td><div class="cell" data-field="note"></div></td>
+  </tr></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="4" style="text-align:right">本月合计：</td>
+              <td class="amount-cell" id="month-total">¥ 145.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <div class="add-row" id="add-row">+ 添加一行</div>
+      </div>
+    </div>
+
+    <div class="compare">
+      <h3>💰 月度对比</h3>
+      <div class="income-row">
+        <label>固定收入：</label>
+        <input type="number" id="income-input" value="2000">
+        <label style="margin-left:4px">元</label>
+      </div>
+      <ul class="exp-list" id="exp-list"><li>
+      <input class="exp-name" placeholder="固定开支1" value="" data-i="0" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="0" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支2" value="" data-i="1" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="1" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支3" value="" data-i="2" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="2" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支4" value="" data-i="3" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="3" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支5" value="" data-i="4" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="4" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支6" value="" data-i="5" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="5" data-f="amount">
+    </li><li>
+      <input class="exp-name" placeholder="固定开支7" value="" data-i="6" data-f="name">
+      <input class="exp-amt" type="number" placeholder="0" value="" data-i="6" data-f="amount">
+    </li></ul>
+      <div class="result-box" id="result-box">
+        <div class="label">本月剩余</div>
+        <div class="value" id="remain-value">¥ 1855.00</div>
+        <div class="breakdown" id="breakdown">收入¥ 2000.00 − 固定开支¥ 0.00 − 本月¥ 145.00</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Statistics Modal -->
+<div class="modal" id="stat-modal">
+  <div class="modal-content" style="position:relative">
+    <button class="close-btn" data-close="stat-modal">×</button>
+    <h2>📊 月度统计</h2>
+    <div style="margin-bottom:12px;color:#6b7280;font-size:13px">按金额从高到低排列 · 统计全部月份</div>
+    <table class="stat-table">
+      <thead><tr><th>事项</th><th>笔数</th><th>总额</th></tr></thead>
+      <tbody id="stat-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Approval Drawer -->
+<div class="approval-drawer" id="appr-drawer">
+  <div class="appr-header">
+    <h3>✅ 朋友审批</h3>
+    <button id="close-appr">关闭</button>
+  </div>
+  <div class="appr-body">
+    <div class="appr-section">
+      <h4>📷 商品图片（最多3张）</h4>
+      <div class="img-grid" id="img-grid">
+        <div class="img-thumb"><span class="add" id="add-img">+</span></div>
+      </div>
+      <input type="file" id="img-input" accept="image/*" capture="environment" multiple="" style="display:none">
+      <div class="share-bar" style="margin-top:8px">
+        <button class="share-btn wechat" id="link-wechat">微信</button>
+        <button class="share-btn douyin" id="link-douyin">抖音</button>
+        <button class="share-btn copy" id="link-paste">粘贴链接识别</button>
+      </div>
+      <p style="font-size:11px;color:#9ca3af;margin:6px 0 0">可从淘宝/拼多多/抖音分享商品链接粘贴到此处自动识别</p>
+      <input type="text" id="link-input" placeholder="粘贴淘宝/拼多多/抖音商品链接..." style="margin-top:6px">
+    </div>
+
+    <div class="appr-section">
+      <h4>💴 金额与购买理由</h4>
+      <input type="number" id="appr-amount" placeholder="商品金额">
+      <textarea id="appr-reason" placeholder="填写购买理由..."></textarea>
+    </div>
+
+    <div class="appr-section">
+      <h4>👥 审批朋友（1-4人）</h4>
+      <div class="approvers" id="approvers"></div>
+      <button class="add-approver" id="add-approver" style="margin-top:8px">+ 添加审批人</button>
+    </div>
+
+    <div class="appr-section">
+      <h4>📤 发起审批</h4>
+      <button class="btn btn-primary" style="width:100%;padding:12px" id="submit-appr">发送审批请求</button>
+    </div>
+
+    <div class="appr-section" id="appr-list-section">
+      <h4>📋 我的审批记录</h4>
+      <div class="approve-list" id="approve-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal" id="qr-modal">
+  <div class="modal-content qr-area" style="position:relative">
+    <button class="close-btn" data-close="qr-modal">×</button>
+    <h2>📱 安装到手机</h2>
+    <p>扫描二维码在浏览器打开，然后"添加到主屏幕"</p>
+    <div id="qrcode"></div>
+    <p>网页版链接：<br><a id="qr-link" href="#" target="_blank"></a></p>
+    <div class="install-tip">
+      <b>📱 iPhone：</b>用 Safari 打开链接 → 点击分享 → "添加到主屏幕"<br>
+      <b>🤖 Android：</b>用 Chrome 打开链接 → 菜单 → "添加到主屏幕"<br>
+      <b>💻 电脑：</b>直接在浏览器打开即可使用，数据自动同步。
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= Utils ======================= */
+const $ = (s, c = document) => c.querySelector(s);
+const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+const STORE_KEY = 'jizhang_data_v1';
+const SESSION_KEY = 'jizhang_session_v1';
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function fmt(n) {
+  return '¥ ' + (Number(n) || 0).toFixed(2);
+}
+
+function simpleHash(s) {
+  let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+  return h.toString(36);
+}
+
+/* ======================= Data ======================= */
+let data = loadData();
+
+function defaultMonth(ym) {
+  return {
+    ym,
+    rows: [],
+    income: 2000,
+    expenses: Array.from({length:7}, () => ({name:'', amount:''}))
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  return { months: { [ym]: defaultMonth(ym) }, approvals: [], currentMonth: ym };
+}
+
+function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+
+function getMonth(ym) {
+  if (!data.months[ym]) data.months[ym] = defaultMonth(ym);
+  return data.months[ym];
+}
+
+function currentYM() { return data.currentMonth; }
+function setCurrentYM(ym) { data.currentMonth = ym; saveData(); }
+
+/* ======================= Auth ======================= */
+function isLoggedIn() {
+  const s = localStorage.getItem(SESSION_KEY);
+  if (!s) return false;
+  try {
+    const obj = JSON.parse(s);
+    return obj.token === simpleHash('auth' + obj.pwdHash) && Date.now() < obj.expiry;
+  } catch(e){ return false; }
+}
+
+function loginOk() {
+  // long-lived session: 10 years
+  const pwdHash = localStorage.getItem('jizhang_pwd_hash');
+  const session = { pwdHash, token: simpleHash('auth' + pwdHash), expiry: Date.now() + 10*365*24*3600*1000 };
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+function showApp() {
+  $('#login-screen').style.display = 'none';
+  $('#app').style.display = 'flex';
+  initApp();
+}
+
+let registerMode = false;
+
+$('#login-btn').addEventListener('click', () => {
+  const pwd = $('#pwd-input').value;
+  const msg = $('#login-msg');
+  if (registerMode) {
+    if (pwd.length < 4) { msg.textContent = '密码至少4位'; return; }
+    localStorage.setItem('jizhang_pwd_hash', simpleHash(pwd));
+    msg.textContent = '';
+    loginOk(); showApp();
+    return;
+  }
+  const stored = localStorage.getItem('jizhang_pwd_hash');
+  if (!stored) { msg.textContent = '请先点击下方设置密码'; return; }
+  if (simpleHash(pwd) === stored) { msg.textContent=''; loginOk(); showApp(); }
+  else { msg.textContent = '密码错误'; }
+});
+
+$('#toggle-register').addEventListener('click', () => {
+  const btn = $('#toggle-register');
+  const loginBtn = $('#login-btn');
+  registerMode = !registerMode;
+  if (registerMode) {
+    btn.textContent = '返回登录';
+    loginBtn.textContent = '设置密码';
+    $('#login-msg').textContent = '请输入至少4位密码';
+  } else {
+    btn.textContent = '首次使用？设置密码';
+    loginBtn.textContent = '登 录';
+    $('#login-msg').textContent = '';
+  }
+});
+
+if (isLoggedIn()) showApp();
+
+/* ======================= Table rendering ======================= */
+let currentEditRow = null;
+
+function renderMonthSelect() {
+  const sel = $('#month-select');
+  const months = Object.keys(data.months).sort();
+  sel.innerHTML = months.map(m => `<option value="${m}" ${m===currentYM()?'selected':''}>${m}</option>`).join('');
+}
+
+function renderTable() {
+  const ym = currentYM();
+  const m = getMonth(ym);
+  const tbody = $('#tbody');
+  tbody.innerHTML = '';
+  m.rows.forEach((row, i) => tbody.appendChild(makeRow(row, i)));
+  $('#month-total').textContent = fmt(m.rows.reduce((s,r)=>s+(Number(r.amount)||0),0));
+  $('#income-input').value = m.income;
+  renderExpenses();
+  updateRemain();
+  renderMonthSelect();
+  $('#month-label').textContent = `${ym.split('-')[0]}年${parseInt(ym.split('-')[1])}月`;
+}
+
+function makeRow(row, idx) {
+  const tr = document.createElement('tr');
+  tr.dataset.idx = idx;
+  if (row.selected) tr.classList.add('selected');
+  tr.innerHTML = `
+    <td class="check-cell"><input type="checkbox" class="row-check" ${row.selected?'checked':''} /></td>
+    <td><div class="cell" contenteditable="true" data-field="date">${row.date||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="item">${row.item||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="detail">${row.detail||''}</div></td>
+    <td><div class="cell amount-cell" contenteditable="true" data-field="amount">${row.amount||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="note">${row.note||''}</div></td>
+  `;
+  return tr;
+}
+
+/* ---- Cell editing & WPS paste ---- */
+$('#tbody').addEventListener('input', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  const tr = cell.closest('tr');
+  const idx = Number(tr.dataset.idx);
+  const field = cell.dataset.field;
+  const m = getMonth(currentYM());
+  m.rows[idx][field] = cell.textContent;
+  if (field === 'amount') updateRemain();
+  saveData();
+});
+
+// Paste handler: supports WPS/Excel tab-separated paste
+$('#tbody').addEventListener('paste', (e) => {
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (!text) return;
+  const rows = text.split(/\r?\n/).filter(r => r.trim() !== '');
+  if (rows.length > 1 || rows[0].includes('\t')) {
+    e.preventDefault();
+    const tr = cell.closest('tr');
+    const startIdx = Number(tr.dataset.idx);
+    const startField = cell.dataset.field;
+    const fields = ['date','item','detail','amount','note'];
+    const colIdx = fields.indexOf(startField);
+    const m = getMonth(currentYM());
+    // Build a matrix from clipboard
+    const matrix = rows.map(r => r.split('\t'));
+    matrix.forEach((cells, rIdx) => {
+      let targetIdx = startIdx + rIdx;
+      while (m.rows.length <= targetIdx) m.rows.push({date:'',item:'',detail:'',amount:'',note:'',selected:false});
+      cells.forEach((val, cIdx) => {
+        const fieldIdx = colIdx + cIdx;
+        if (fieldIdx >= 0 && fieldIdx < fields.length) {
+          m.rows[targetIdx][fields[fieldIdx]] = val;
+        }
+      });
+    });
+    saveData();
+    renderTable();
+    toast(`已粘贴 ${rows.length} 行数据`);
+  }
+});
+
+// Copy handler: copy selected rows as tab-separated
+document.addEventListener('copy', (e) => {
+  const sel = window.getSelection().toString();
+  if (sel) return; // let default copy for selection
+  const checked = $$('.row-check:checked');
+  if (checked.length === 0) return;
+  e.preventDefault();
+  const m = getMonth(currentYM());
+  const lines = checked.map(cb => {
+    const tr = cb.closest('tr');
+    const idx = Number(tr.dataset.idx);
+    const r = m.rows[idx];
+    return [r.date, r.item, r.detail, r.amount, r.note].join('\t');
+  });
+  e.clipboardData.setData('text/plain', lines.join('\n'));
+  toast(`已复制 ${checked.length} 行，可粘贴到 WPS`);
+});
+
+$('#add-row').addEventListener('click', () => {
+  const m = getMonth(currentYM());
+  m.rows.push({date:'',item:'',detail:'',amount:'',note:'',selected:false});
+  saveData(); renderTable();
+});
+
+$('#tbody').addEventListener('change', (e) => {
+  if (e.target.classList.contains('row-check')) {
+    const tr = e.target.closest('tr');
+    const idx = Number(tr.dataset.idx);
+    const m = getMonth(currentYM());
+    m.rows[idx].selected = e.target.checked;
+    tr.classList.toggle('selected', e.target.checked);
+  }
+});
+
+/* ---- Month navigation ---- */
+function shiftMonth(delta) {
+  const [y, m] = currentYM().split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  setCurrentYM(ym);
+  getMonth(ym); // ensure exists
+  saveData();
+  renderTable();
+  toast(`已切换到 ${ym}`);
+}
+
+$('#prev-month').addEventListener('click', () => shiftMonth(-1));
+$('#next-month').addEventListener('click', () => shiftMonth(1));
+$('#month-select').addEventListener('change', (e) => {
+  setCurrentYM(e.target.value); renderTable();
+});
+
+/* ---- Save / Delete ---- */
+$('#save-btn').addEventListener('click', () => { saveData(); toast('已保存 ✓'); });
+
+$('#del-btn').addEventListener('click', () => {
+  const m = getMonth(currentYM());
+  const before = m.rows.length;
+  m.rows = m.rows.filter(r => !r.selected);
+  saveData(); renderTable();
+  toast(`已删除 ${before - m.rows.length} 条`);
+});
+
+/* ======================= Compare panel ======================= */
+function renderExpenses() {
+  const m = getMonth(currentYM());
+  const list = $('#exp-list');
+  list.innerHTML = '';
+  m.expenses.forEach((exp, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <input class="exp-name" placeholder="固定开支${i+1}" value="${exp.name||''}" data-i="${i}" data-f="name" />
+      <input class="exp-amt" type="number" placeholder="0" value="${exp.amount||''}" data-i="${i}" data-f="amount" />
+    `;
+    list.appendChild(li);
+  });
+}
+
+$('#exp-list').addEventListener('input', (e) => {
+  const t = e.target;
+  const i = Number(t.dataset.i), f = t.dataset.f;
+  const m = getMonth(currentYM());
+  m.expenses[i][f] = t.value;
+  saveData(); updateRemain();
+});
+
+$('#income-input').addEventListener('input', (e) => {
+  const m = getMonth(currentYM());
+  m.income = Number(e.target.value) || 0;
+  saveData(); updateRemain();
+});
+
+function updateRemain() {
+  const m = getMonth(currentYM());
+  const income = Number(m.income) || 0;
+  const fixedExp = m.expenses.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  const monthExp = m.rows.reduce((s,r)=>s+(Number(r.amount)||0),0);
+  const remain = income - fixedExp - monthExp;
+  $('#remain-value').textContent = fmt(remain);
+  $('#breakdown').textContent = `收入${fmt(income)} − 固定开支${fmt(fixedExp)} − 本月${fmt(monthExp)}`;
+  $('#result-box').classList.toggle('negative', remain < 0);
+  $('#month-total').textContent = fmt(monthExp);
+}
+
+/* ======================= Statistics ======================= */
+$('#stat-btn').addEventListener('click', () => {
+  const totals = {};
+  Object.values(data.months).forEach(m => {
+    m.rows.forEach(r => {
+      const key = r.item || '(未分类)';
+      if (!totals[key]) totals[key] = {count:0, amount:0};
+      totals[key].count++;
+      totals[key].amount += Number(r.amount) || 0;
+    });
+  });
+  const arr = Object.entries(totals).sort((a,b)=>b[1].amount-a[1].amount);
+  $('#stat-body').innerHTML = arr.map(([name,v]) =>
+    `<tr><td>${name}</td><td>${v.count}</td><td>${fmt(v.amount)}</td></tr>`
+  ).join('');
+  $('#stat-modal').classList.add('show');
+});
+
+/* ======================= Approval ======================= */
+let apprImages = [];
+let approvers = [{name:''}];
+
+function renderApprovers() {
+  const box = $('#approvers');
+  box.innerHTML = '';
+  approvers.forEach((a, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'approver-chip';
+    chip.innerHTML = `👤 <input placeholder="朋友名字" value="${a.name}" data-i="${i}" /> ${approvers.length>1?'<span class="remove" data-i="'+i+'">×</span>':''}`;
+    box.appendChild(chip);
+  });
+}
+$('#add-approver').addEventListener('click', () => {
+  if (approvers.length >= 4) { toast('最多4位审批人'); return; }
+  approvers.push({name:''});
+  renderApprovers();
+});
+$('#approvers').addEventListener('input', (e) => {
+  if (e.target.matches('input')) approvers[Number(e.target.dataset.i)].name = e.target.value;
+});
+$('#approvers').addEventListener('click', (e) => {
+  if (e.target.classList.contains('remove')) {
+    approvers.splice(Number(e.target.dataset.i), 1);
+    renderApprovers();
+  }
+});
+
+function renderImgGrid() {
+  const grid = $('#img-grid');
+  grid.innerHTML = '';
+  apprImages.forEach((src, i) => {
+    const d = document.createElement('div');
+    d.className = 'img-thumb';
+    d.innerHTML = `<img src="${src}" /><button class="del" data-i="${i}">×</button>`;
+    grid.appendChild(d);
+  });
+  if (apprImages.length < 3) {
+    const add = document.createElement('div');
+    add.className = 'img-thumb';
+    add.innerHTML = '<span class="add" id="add-img">+</span>';
+    grid.appendChild(add);
+  }
+}
+
+$('#img-grid').addEventListener('click', (e) => {
+  if (e.target.id === 'add-img' || e.target.closest('#add-img')) $('#img-input').click();
+  if (e.target.classList.contains('del')) {
+    apprImages.splice(Number(e.target.dataset.i), 1);
+    renderImgGrid();
+  }
+});
+
+$('#img-input').addEventListener('change', (e) => {
+  const files = [...e.target.files];
+  files.forEach(f => {
+    if (apprImages.length >= 3) return;
+    const reader = new FileReader();
+    reader.onload = () => { apprImages.push(reader.result); renderImgGrid(); };
+    reader.readAsDataURL(f);
+  });
+});
+
+// Link paste simulation: parse a product link and generate placeholder images + amount
+$('#link-paste').addEventListener('click', () => {
+  const link = $('#link-input').value.trim();
+  if (!link) { toast('请先粘贴商品链接'); return; }
+  // Simulated recognition: generate 3 placeholder images based on link hash
+  apprImages = [];
+  for (let i = 0; i < 3; i++) {
+    const seed = encodeURIComponent(link + i);
+    apprImages.push(`https://picsum.photos/seed/${seed}/300/300`);
+  }
+  // Try to extract a price-ish number from the link, else random demo price
+  const m = link.match(/(\d{2,4}(?:\.\d{1,2})?)/);
+  $('#appr-amount').value = m ? m[1] : (Math.random()*200+20).toFixed(2);
+  renderImgGrid();
+  toast('已识别商品图片和金额');
+});
+
+$('#link-wechat').addEventListener('click', () => toast('请在微信中打开此链接分享给朋友审批'));
+$('#link-douyin').addEventListener('click', () => toast('请在抖音中打开此链接分享给朋友审批'));
+
+$('#submit-appr').addEventListener('click', () => {
+  const amount = Number($('#appr-amount').value);
+  const reason = $('#appr-reason').value;
+  const validApprovers = approvers.filter(a => a.name.trim());
+  if (!amount) { toast('请填写金额'); return; }
+  if (validApprovers.length === 0) { toast('请至少添加1位审批人'); return; }
+  const record = {
+    id: Date.now(),
+    images: [...apprImages],
+    amount, reason,
+    approvers: validApprovers.map(a => ({name: a.name, decision: 'pending', reason: ''})),
+    status: 'pending',
+    createdAt: new Date().toLocaleString('zh-CN')
+  };
+  data.approvals.unshift(record);
+  saveData();
+  renderApprovals();
+  toast('审批请求已发送 ✓');
+  // reset
+  apprImages = []; renderImgGrid();
+  $('#appr-amount').value = '';
+  $('#appr-reason').value = '';
+  $('#link-input').value = '';
+});
+
+function renderApprovals() {
+  const list = $('#approve-list');
+  if (data.approvals.length === 0) {
+    list.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px">暂无审批记录</p>';
+    return;
+  }
+  list.innerHTML = data.approvals.map(ap => {
+    const allApproved = ap.approvers.every(a => a.decision === 'approve');
+    const anyRejected = ap.approvers.some(a => a.decision === 'reject');
+    let statusBadge = '<span class="decision pending">审批中</span>';
+    if (allApproved) statusBadge = '<span class="decision approve">全部同意 ✓</span>';
+    else if (anyRejected) statusBadge = '<span class="decision reject">有人反对</span>';
+    return `<div class="appr-item">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        ${ap.images.slice(0,3).map(img => `<img src="${img}" style="width:48px;height:48px;border-radius:6px;object-fit:cover" />`).join('')}
+      </div>
+      <div><b>${fmt(ap.amount)}</b> · ${ap.reason || '无理由'}</div>
+      <div style="font-size:11px;color:#9ca3af;margin:4px 0">${ap.createdAt} ${statusBadge}</div>
+      ${ap.approvers.map(a => `<div class="who">${a.name}：
+        ${a.decision==='approve'?'<span class="decision approve">同意 ✓</span>':
+          a.decision==='reject'?'<span class="decision reject">反对 ✗</span>':
+          '<span class="decision pending">待审批</span>'}
+      </div>${a.reason?`<div class="reason">理由：${a.reason}</div>`:''}`).join('')}
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-success" style="padding:4px 10px;font-size:12px" data-act="approve" data-id="${ap.id}">模拟同意</button>
+        <button class="btn btn-danger" style="padding:4px 10px;font-size:12px" data-act="reject" data-id="${ap.id}">模拟反对</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+$('#approve-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  const ap = data.approvals.find(a => a.id === id);
+  if (!ap) return;
+  const act = btn.dataset.act;
+  const firstPending = ap.approvers.find(a => a.decision === 'pending');
+  if (firstPending) {
+    firstPending.decision = act;
+    firstPending.reason = act === 'approve' ? '看起来不错，同意购买' : '太贵了，建议再等等';
+  }
+  saveData(); renderApprovals();
+});
+
+$('#appr-btn').addEventListener('click', () => {
+  $('#appr-drawer').classList.add('open');
+  renderApprovers();
+  renderImgGrid();
+  renderApprovals();
+});
+$('#close-appr').addEventListener('click', () => $('#appr-drawer').classList.remove('open'));
+
+/* ======================= QR / Install ======================= */
+$('#qr-btn').addEventListener('click', () => {
+  const url = location.href;
+  $('#qr-link').href = url; $('#qr-link').textContent = url;
+  $('#qrcode').innerHTML = '';
+  new QRCode($('#qrcode'), { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+  $('#qr-modal').classList.add('show');
+});
+
+// Close modals
+document.addEventListener('click', (e) => {
+  if (e.target.matches('[data-close]')) {
+    $('#' + e.target.dataset.close).classList.remove('show');
+  }
+  if (e.target.classList.contains('modal')) e.target.classList.remove('show');
+});
+
+/* ======================= Init ======================= */
+function initApp() {
+  renderTable();
+  renderApprovers();
+}
+
+/* ---- Service Worker (Blob) ---- */
+if ('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE='jizhang-app-v2';
+self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('activate',e=>{self.clients.claim();});
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).then(r=>{
+    if(r&&r.status===200&&e.request.method==='GET'){const cl=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cl));}
+    return r;
+  }).catch(()=>c)));
+});`;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+
+
+</body><div id="imt-webext"></div></html>
