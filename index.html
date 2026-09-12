@@ -5,101 +5,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="记账本" />
-<meta name="theme-color" content="#3b82f6" />
-<title>家庭记账本</title>
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"%E5%AE%B6%E5%BA%AD%E8%AE%B0%E8%B4%A6%E6%9C%AC","short_name":"%E8%AE%B0%E8%B4%A6%E6%9C%AC","description":"%E5%8F%AF%E5%90%8C%E6%AD%A5%E7%9A%84%E5%AE%B6%E5%BA%AD%E8%AE%B0%E8%B4%A6%E6%9C%AC","start_url":".","display":"standalone","orientation":"any","background_color":"#f5f7fa","theme_color":"#3b82f6","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2740%27 fill=%27%233b82f6%27/%3E%3Ctext x=%2796%27 y=%27130%27 font-size=%27120%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27 font-weight=%27bold%27%3E%C2%A5%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}' />
+<meta name="apple-mobile-web-app-title" content="果果流水账" />
+<meta name="theme-color" content="#f4a8be" />
+<title>果果流水账</title>
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"%E6%9E%9C%E6%9E%9C%E6%B5%81%E6%B0%B4%E8%B4%A6","short_name":"%E6%9E%9C%E6%9E%9C%E8%B4%A6","description":"%E5%8F%AF%E5%90%8C%E6%AD%A5%E7%9A%84%E6%9E%9C%E6%9E%9C%E6%B5%81%E6%B0%B4%E8%B4%A6","start_url":".","display":"standalone","orientation":"any","background_color":"#f5f7fa","theme_color":"#f4a8be","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27%3E%3Crect width=%27192%27 height=%27192%27 rx=%2740%27 fill=%27%23f4a8be%27/%3E%3Ctext x=%2796%27 y=%27130%27 font-size=%27120%27 text-anchor=%27middle%27 fill=%27white%27 font-family=%27sans-serif%27 font-weight=%27bold%27%3E%C2%A5%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}' />
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
+  :root {
+    --blue: #7bbfe8;
+    --blue-light: #d6ecf8;
+    --blue-border: #b3dff5;
+    --blue-focus: #8ecbef;
+    --pink: #f4a8be;
+    --pink-light: #fce4ec;
+    --pink-border: #f8c5d3;
+    --pink-focus: #f4b8c9;
+    --gradient: linear-gradient(135deg, #7bbfe8, #f4a8be);
+    --gradient-soft: linear-gradient(135deg, #d6ecf8, #fce4ec);
+    --gradient-bg: linear-gradient(160deg, #eaf6fc 0%, #fce4ec 100%);
+  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #1f2937; height: 100%; overflow: hidden; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--gradient-bg); color: #1f2937; height: 100%; overflow: hidden; }
   input, button, textarea { font-family: inherit; font-size: 15px; }
   button { cursor: pointer; border: none; outline: none; }
 
   /* ===== Login ===== */
-  #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  #login-screen { position: fixed; inset: 0; background: var(--gradient); display: flex; align-items: center; justify-content: center; z-index: 9999; overflow-y: auto; }
   .login-box { background: white; padding: 32px 28px; border-radius: 20px; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); text-align: center; }
-  .login-box h1 { margin: 0 0 8px; color: #3b82f6; font-size: 26px; }
+  .login-box h1 { margin: 0 0 8px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 26px; }
   .login-box p { color: #6b7280; margin: 0 0 24px; font-size: 14px; }
   .login-box input { width: 100%; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 14px; font-size: 16px; }
-  .login-box input:focus { border-color: #3b82f6; outline: none; }
-  .login-box button { width: 100%; padding: 13px; background: #3b82f6; color: white; border-radius: 10px; font-size: 16px; font-weight: 600; }
-  .login-box .toggle { margin-top: 14px; color: #3b82f6; font-size: 14px; background: none; padding: 4px; }
+  .login-box input:focus { border-color: var(--pink); outline: none; }
+  .login-box button { width: 100%; padding: 13px; background: var(--gradient); color: white; border-radius: 10px; font-size: 16px; font-weight: 600; }
+  .login-box .toggle { margin-top: 14px; color: var(--pink); font-size: 14px; background: none; padding: 4px; }
   .login-msg { color: #ef4444; font-size: 13px; min-height: 18px; margin-bottom: 8px; }
 
   /* ===== App layout ===== */
   #app { display: none; flex-direction: column; height: 100vh; height: 100dvh; }
-  .topbar { background: white; border-bottom: 1px solid #e5e7eb; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
-  .topbar .title { font-weight: 700; color: #3b82f6; font-size: 17px; margin-right: 6px; white-space: nowrap; }
-  .month-nav { display: flex; align-items: center; gap: 6px; background: #eff6ff; border-radius: 10px; padding: 4px 8px; }
-  .month-nav button { background: #3b82f6; color: white; width: 30px; height: 28px; border-radius: 7px; font-size: 18px; line-height: 1; }
+  .topbar { background: white; border-bottom: 2px solid; border-image: var(--gradient) 1; padding: 8px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; }
+  .topbar .title { font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 17px; margin-right: 6px; white-space: nowrap; }
+  .month-nav { display: flex; align-items: center; gap: 6px; background: var(--gradient-soft); border-radius: 10px; padding: 4px 8px; }
+  .month-nav button { background: var(--gradient); color: white; width: 30px; height: 28px; border-radius: 7px; font-size: 18px; line-height: 1; }
   .month-nav span { font-weight: 600; font-size: 15px; min-width: 70px; text-align: center; }
-  .month-nav select { border: 1px solid #dbeafe; border-radius: 6px; padding: 3px 4px; background: white; }
+  .month-nav select { border: 1px solid var(--pink-border); border-radius: 6px; padding: 3px 4px; background: white; }
   .actions { display: flex; gap: 6px; margin-left: auto; }
   .btn { padding: 7px 14px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: opacity 0.15s; }
   .btn:active { opacity: 0.7; }
-  .btn-primary { background: #3b82f6; color: white; }
+  .btn-primary { background: var(--gradient); color: white; }
   .btn-success { background: #10b981; color: white; }
   .btn-danger { background: #ef4444; color: white; }
   .btn-warn { background: #f59e0b; color: white; }
   .btn-ghost { background: #f3f4f6; color: #374151; }
 
-  .main { flex: 1; overflow: auto; padding: 12px; display: flex; gap: 12px; }
+  .main { flex: 1; overflow: auto; padding: 12px; display: flex; gap: 12px; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 
   /* ===== Table ===== */
   .table-wrap { flex: 1; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); min-width: 0; position: relative; }
   .table-scroll { overflow: auto; max-height: calc(100vh - 120px); }
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  thead th { background: #3b82f6; color: white; padding: 10px 8px; font-size: 14px; font-weight: 600; position: sticky; top: 0; z-index: 5; text-align: left; }
+  thead th { background: #f8fafc; color: #374151; padding: 10px 8px; font-size: 14px; font-weight: 600; position: sticky; top: 0; z-index: 5; text-align: left; border-bottom: 2px solid #e5e7eb; }
   thead th.col-check { width: 44px; text-align: center; }
   thead th.col-date { width: 90px; }
   thead th.col-amount { width: 80px; }
   thead th.col-cum { width: 90px; }
   tbody td { border-bottom: 1px solid #f1f5f9; padding: 0; }
   tbody td .cell { width: 100%; padding: 9px 8px; min-height: 38px; outline: none; background: transparent; border: 1px solid transparent; }
-  tbody td .cell:focus { background: #eff6ff; border-color: #93c5fd; }
-  tbody tr.selected { background: #fef2f2; }
+  tbody td .cell:focus { background: var(--pink-light); border-color: var(--pink-focus); }
+  tbody tr.selected { background: var(--pink-light); }
   td.check-cell { text-align: center; }
-  .row-check { width: 18px; height: 18px; accent-color: #ef4444; }
+  .row-check { width: 18px; height: 18px; accent-color: var(--pink); }
   .amount-cell { text-align: right; font-variant-numeric: tabular-nums; }
-  .cum-cell { text-align: right; font-variant-numeric: tabular-nums; color: #6366f1; font-weight: 600; }
-  .add-row { background: #f9fafb; color: #3b82f6; padding: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; }
-  .add-row:hover { background: #eff6ff; }
+  .cum-cell { text-align: right; font-variant-numeric: tabular-nums; color: var(--pink); font-weight: 600; }
+  .add-row { background: var(--gradient-soft); color: var(--pink); padding: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; }
+  .add-row:hover { background: var(--pink-light); }
   .total-row { background: #fef3c7 !important; font-weight: 700; }
   .total-row td { padding: 10px 8px; border-top: 2px solid #f59e0b; }
 
   /* ===== Compare panel ===== */
   .compare { width: 280px; background: white; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; position: sticky; top: 0; }
-  .compare h3 { margin: 0 0 10px; color: #374151; font-size: 15px; border-bottom: 2px solid #3b82f6; padding-bottom: 6px; }
+  .compare h3 { margin: 0 0 10px; color: #374151; font-size: 15px; border-bottom: 2px solid; border-image: var(--gradient) 1; padding-bottom: 6px; }
   .income-row { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
   .income-row label { font-size: 13px; color: #6b7280; }
   .income-row input { flex: 1; padding: 6px 8px; border: 1px solid #e5e7eb; border-radius: 6px; width: 100px; text-align: right; }
+  .income-row input:focus { border-color: var(--pink); outline: none; }
   .exp-list { list-style: none; padding: 0; margin: 0 0 10px; }
   .exp-list li { display: flex; gap: 4px; margin-bottom: 5px; align-items: center; }
   .exp-list input { padding: 5px 6px; border: 1px solid #e5e7eb; border-radius: 5px; font-size: 13px; }
+  .exp-list input:focus { border-color: var(--pink); outline: none; }
   .exp-list .exp-name { flex: 1; min-width: 0; }
   .exp-list .exp-amt { width: 70px; text-align: right; }
-  .result-box { background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 10px; padding: 12px; text-align: center; margin-top: 10px; }
+  .result-box { background: var(--gradient); color: white; border-radius: 10px; padding: 12px; text-align: center; margin-top: 10px; }
   .result-box .label { font-size: 12px; opacity: 0.9; }
   .result-box .value { font-size: 24px; font-weight: 700; margin-top: 4px; }
   .result-box.negative { background: linear-gradient(135deg, #ef4444, #dc2626); }
-  .breakdown { font-size: 11px; color: #d1fae5; margin-top: 6px; line-height: 1.5; }
+  .breakdown { font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 6px; line-height: 1.5; }
 
   /* ===== Stats modal ===== */
   .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
   .modal.show { display: flex; }
   .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; overflow: auto; padding: 20px; }
-  .modal-content h2 { margin: 0 0 14px; color: #3b82f6; }
+  .modal-content h2 { margin: 0 0 14px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
   .stat-table { width: 100%; border-collapse: collapse; }
   .stat-table th, .stat-table td { padding: 9px 8px; border-bottom: 1px solid #f1f5f9; text-align: left; font-size: 14px; }
-  .stat-table th { background: #f8fafc; color: #6b7280; }
+  .stat-table th { background: var(--gradient-soft); color: #6b7280; }
   .stat-table td:last-child, .stat-table th:last-child { text-align: right; font-variant-numeric: tabular-nums; }
   .close-btn { position: absolute; top: 16px; right: 16px; background: #f3f4f6; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; color: #6b7280; }
 
   /* ===== Approval ===== */
-  .approval-drawer { position: fixed; top: 0; right: -110%; width: 100%; max-width: 440px; height: 100%; background: #f5f7fa; z-index: 2000; transition: right 0.3s; box-shadow: -4px 0 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
+  .approval-drawer { position: fixed; top: 0; right: -110%; width: 100%; max-width: 440px; height: 100%; background: var(--gradient-soft); z-index: 2000; transition: right 0.3s; box-shadow: -4px 0 20px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
   .approval-drawer.open { right: 0; }
-  .appr-header { background: #3b82f6; color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .appr-header { background: #4b5563; color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
   .appr-header button { background: rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 8px; }
   .appr-header h3 { margin: 0; flex: 1; }
   .appr-body { flex: 1; overflow: auto; padding: 14px; }
@@ -108,22 +123,22 @@
   .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .img-thumb { aspect-ratio: 1; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
   .img-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .img-thumb .add { font-size: 28px; color: #9ca3af; cursor: pointer; }
+  .img-thumb .add { font-size: 28px; color: var(--pink); cursor: pointer; }
   .img-thumb .del { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.6); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; line-height: 1; }
   .appr-section input, .appr-section textarea { width: 100%; padding: 8px 10px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
   .appr-section textarea { resize: vertical; min-height: 60px; }
   .approvers { display: flex; flex-wrap: wrap; gap: 6px; }
-  .approver-chip { display: flex; align-items: center; gap: 4px; background: #eff6ff; padding: 6px 10px; border-radius: 16px; font-size: 13px; }
+  .approver-chip { display: flex; align-items: center; gap: 4px; background: var(--gradient-soft); padding: 6px 10px; border-radius: 16px; font-size: 13px; }
   .approver-chip input { width: 70px; border: none; background: transparent; padding: 0; margin: 0; font-size: 13px; }
   .approver-chip .remove { color: #ef4444; font-weight: bold; cursor: pointer; }
-  .add-approver { background: #f3f4f6; color: #3b82f6; padding: 6px 12px; border-radius: 16px; font-size: 13px; }
+  .add-approver { background: #f3f4f6; color: var(--pink); padding: 6px 12px; border-radius: 16px; font-size: 13px; }
   .share-bar { display: flex; gap: 8px; flex-wrap: wrap; }
   .share-btn { flex: 1; min-width: 80px; padding: 10px; border-radius: 10px; color: white; font-size: 13px; font-weight: 500; }
   .share-btn.wechat { background: #07c160; }
   .share-btn.douyin { background: #000; }
   .share-btn.copy { background: #6b7280; }
 
-  .approve-list .appr-item { background: #f9fafb; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+  .approve-list .appr-item { background: var(--gradient-soft); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
   .approve-list .appr-item .who { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
   .approve-list .appr-item .reason { font-size: 13px; color: #6b7280; }
   .approve-list .appr-item .decision { padding: 2px 8px; border-radius: 4px; font-size: 12px; }
@@ -135,22 +150,28 @@
   .qr-area { text-align: center; }
   .qr-area #qrcode { display: inline-block; padding: 16px; background: white; border-radius: 12px; }
   .qr-area p { color: #6b7280; margin: 10px 0; font-size: 13px; }
-  .qr-area a { color: #3b82f6; word-break: break-all; }
-  .install-tip { background: #eff6ff; border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #1e40af; line-height: 1.6; text-align: left; }
+  .qr-area a { color: var(--pink); word-break: break-all; }
+  .install-tip { background: var(--gradient-soft); border-radius: 10px; padding: 12px; margin-top: 12px; font-size: 13px; color: #6b21a8; line-height: 1.6; text-align: left; }
 
   /* ===== Toast ===== */
   .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 20px; border-radius: 8px; z-index: 3000; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
   .toast.show { opacity: 1; }
 
+  /* ===== Floating Add Button (mobile) ===== */
+  .fab { display: none; position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--gradient); color: white; font-size: 28px; box-shadow: 0 4px 12px rgba(236,72,153,0.4); z-index: 200; line-height: 1; }
+
   /* ===== Responsive ===== */
   @media (max-width: 760px) {
-    .main { flex-direction: column; padding: 8px; }
+    .main { flex-direction: column; padding: 8px; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
     .compare { width: 100%; position: static; }
     .topbar { padding: 6px 8px; }
     .btn { padding: 6px 10px; font-size: 13px; }
     .title { font-size: 15px; }
     thead th { font-size: 12px; padding: 8px 4px; }
     thead th.col-cum { width: 70px; }
+    .fab { display: flex; align-items: center; justify-content: center; }
+    .table-scroll { overflow: visible; max-height: none; }
+    .table-wrap { overflow: visible; }
   }
 </style>
 </head>
@@ -159,7 +180,7 @@
 <!-- Login Screen -->
 <div id="login-screen">
   <div class="login-box">
-    <h1>家庭记账本</h1>
+    <h1>果果流水账</h1>
     <p>账号密码登录，关闭后需重新登录</p>
     <div class="login-msg" id="login-msg"></div>
     <input type="text" id="acct-input" placeholder="账号" autocomplete="username" />
@@ -172,7 +193,7 @@
 <!-- App -->
 <div id="app">
   <div class="topbar">
-    <span class="title">¥ 记账本</span>
+    <span class="title">¥ 果果流水账</span>
     <div class="month-nav">
       <button id="prev-month" title="上一月">‹</button>
       <span id="month-label">2026年9月</span>
@@ -181,9 +202,10 @@
     </div>
     <div class="actions">
       <button class="btn btn-success" id="save-btn">💾 保存</button>
+      <button class="btn btn-ghost" id="copy-btn">📋 复制</button>
       <button class="btn btn-danger" id="del-btn">🗑 删除选中</button>
       <button class="btn btn-warn" id="stat-btn">📊 统计</button>
-      <button class="btn btn-primary" id="appr-btn">✅ 审批</button>
+      <button class="btn" style="background:#4b5563;color:white" id="appr-btn">✅ 审批</button>
       <button class="btn btn-ghost" id="qr-btn">📱 安装</button>
       <button class="btn btn-ghost" id="logout-btn">退出</button>
     </div>
@@ -284,7 +306,11 @@
 
     <div class="appr-section">
       <h4>📤 发起审批</h4>
-      <button class="btn btn-primary" style="width:100%;padding:12px" id="submit-appr">发送审批请求</button>
+      <button class="btn" style="width:100%;padding:12px;background:#4b5563;color:white" id="submit-appr">发送审批请求</button>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" style="background:#07c160;color:white;flex:1;min-width:100px;padding:10px" id="share-wechat">📤 发给微信好友</button>
+        <button class="btn" style="background:#6b7280;color:white;flex:1;min-width:100px;padding:10px" id="share-link">📋 复制审批链接</button>
+      </div>
     </div>
 
     <div class="appr-section" id="appr-list-section">
@@ -310,15 +336,18 @@
   </div>
 </div>
 
+<!-- Floating add button for mobile -->
+<button class="fab" id="fab-add" title="添加记账">＋</button>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ======================= Utils ======================= */
 const $ = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => [...c.querySelectorAll(s)];
-const STORE_KEY = 'jizhang_data_v2';
-const ACCT_KEY = 'jizhang_accounts_v1';
-const SESSION_KEY = 'jizhang_session_v1';
+const CLOUD_URL = 'https://api.npoint.io/3267e2710cddb9d973cd';
+let STORE_KEY = 'jizhang_data_default';
+let currentAcct = '';
 
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -334,8 +363,8 @@ function simpleHash(s) {
   return h.toString(36);
 }
 
-/* ======================= Data ======================= */
-let data = loadData();
+/* ======================= Data (per-account) ======================= */
+let data = null;
 
 function defaultMonth(ym) {
   return {
@@ -346,17 +375,25 @@ function defaultMonth(ym) {
   };
 }
 
+function newData() {
+  const now = new Date();
+  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  return { months: { [ym]: defaultMonth(ym) }, approvals: [], currentMonth: ym, _lastSave: 0 };
+}
+
 function loadData() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) return JSON.parse(raw);
   } catch(e){}
-  const now = new Date();
-  const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  return { months: { [ym]: defaultMonth(ym) }, approvals: [], currentMonth: ym };
+  return newData();
 }
 
-function saveData() { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+function saveData() {
+  data._lastSave = Date.now();
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e){}
+  if (currentAcct) scheduleCloudPush();
+}
 
 function getMonth(ym) {
   if (!data.months[ym]) data.months[ym] = defaultMonth(ym);
@@ -366,20 +403,70 @@ function getMonth(ym) {
 function currentYM() { return data.currentMonth; }
 function setCurrentYM(ym) { data.currentMonth = ym; saveData(); }
 
+/* ======================= Cloud Sync (npoint.io) ======================= */
+let cloudSyncing = false;
+let syncTimer = null;
+
+async function cloudPush() {
+  if (cloudSyncing) return;
+  cloudSyncing = true;
+  try {
+    const resp = await fetch(CLOUD_URL);
+    if (!resp.ok) { cloudSyncing = false; return; }
+    const cloud = await resp.json();
+    if (!cloud.users) cloud.users = {};
+    const myHash = simpleHash(currentAcct);
+    const pwdHash = localStorage.getItem('jizhang_pwd_hash');
+    cloud.users[myHash] = { account: currentAcct, pwdHash, data, ts: Date.now() };
+    await fetch(CLOUD_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(cloud)
+    });
+  } catch(e) { /* network fail, local still works */ }
+  cloudSyncing = false;
+}
+
+async function cloudPull() {
+  try {
+    const resp = await fetch(CLOUD_URL);
+    if (!resp.ok) return false;
+    const cloud = await resp.json();
+    if (!cloud || !cloud.users) return false;
+    const myHash = simpleHash(currentAcct);
+    const userData = cloud.users[myHash];
+    if (userData && userData.data) {
+      const cloudTs = userData.ts || 0;
+      const localTs = data._lastSave || 0;
+      if (cloudTs > localTs) {
+        data = userData.data;
+        data._lastSave = cloudTs;
+        saveData();
+        return true;
+      }
+    }
+  } catch(e) {}
+  return false;
+}
+
+function scheduleCloudPush(delay = 2000) {
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => cloudPush(), delay);
+}
+
+async function cloudPullAndRender() {
+  const updated = await cloudPull();
+  if (updated) { renderTable(); renderApprovals(); toast('已从云端同步数据 ☁'); }
+  return updated;
+}
+
 /* ======================= Auth (sessionStorage: 关闭后失效) ======================= */
 function isLoggedIn() {
-  const s = sessionStorage.getItem(SESSION_KEY);
-  if (!s) return false;
-  try {
-    const obj = JSON.parse(s);
-    return obj.token === simpleHash('auth' + obj.pwdHash);
-  } catch(e){ return false; }
+  return sessionStorage.getItem('jizhang_logged_in') === '1';
 }
 
 function loginOk() {
-  const pwdHash = localStorage.getItem('jizhang_pwd_hash');
-  const session = { pwdHash, token: simpleHash('auth' + pwdHash) };
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  sessionStorage.setItem('jizhang_logged_in', '1');
 }
 
 function showLogin() {
@@ -396,25 +483,69 @@ function showApp() {
 
 let registerMode = false;
 
-$('#login-btn').addEventListener('click', () => {
+$('#login-btn').addEventListener('click', async () => {
   const acct = $('#acct-input').value.trim();
   const pwd = $('#pwd-input').value;
   const msg = $('#login-msg');
   if (!acct) { msg.textContent = '请输入账号'; return; }
+
   if (registerMode) {
     if (pwd.length < 4) { msg.textContent = '密码至少4位'; return; }
+    // 注册：检查云端是否已有该账号
+    msg.textContent = '注册中...';
+    try {
+      const resp = await fetch(CLOUD_URL);
+      const cloud = await resp.json();
+      const myHash = simpleHash(acct);
+      if (cloud.users && cloud.users[myHash]) {
+        msg.textContent = '该账号已存在，请直接登录';
+        return;
+      }
+    } catch(e) {}
     localStorage.setItem('jizhang_account', acct);
     localStorage.setItem('jizhang_pwd_hash', simpleHash(pwd));
+    currentAcct = acct;
+    STORE_KEY = 'jizhang_data_' + simpleHash(acct);
+    data = newData();
+    saveData();
+    await cloudPush();
     msg.textContent = '';
     loginOk(); showApp();
     return;
   }
+
+  // 登录：先查本地，再查云端
   const storedAcct = localStorage.getItem('jizhang_account');
   const stored = localStorage.getItem('jizhang_pwd_hash');
-  if (!stored || !storedAcct) { msg.textContent = '请先注册账号'; return; }
-  if (acct !== storedAcct) { msg.textContent = '账号不存在'; return; }
-  if (simpleHash(pwd) === stored) { msg.textContent=''; loginOk(); showApp(); }
-  else { msg.textContent = '密码错误'; }
+  let valid = false;
+
+  if (storedAcct === acct && stored && simpleHash(pwd) === stored) {
+    valid = true;
+  } else {
+    // 查云端是否有该账号
+    msg.textContent = '验证中...';
+    try {
+      const resp = await fetch(CLOUD_URL);
+      const cloud = await resp.json();
+      const myHash = simpleHash(acct);
+      const userData = cloud.users && cloud.users[myHash];
+      if (userData && userData.pwdHash === simpleHash(pwd)) {
+        valid = true;
+        localStorage.setItem('jizhang_account', acct);
+        localStorage.setItem('jizhang_pwd_hash', simpleHash(pwd));
+      }
+    } catch(e) {}
+  }
+
+  if (valid) {
+    currentAcct = acct;
+    STORE_KEY = 'jizhang_data_' + simpleHash(acct);
+    data = loadData();
+    msg.textContent = '';
+    loginOk(); showApp();
+  } else {
+    msg.textContent = '账号或密码错误';
+  }
 });
 
 $('#toggle-register').addEventListener('click', () => {
@@ -433,12 +564,23 @@ $('#toggle-register').addEventListener('click', () => {
 });
 
 $('#logout-btn').addEventListener('click', () => {
-  sessionStorage.removeItem(SESSION_KEY);
+  cloudPush();
+  sessionStorage.removeItem('jizhang_logged_in');
   showLogin();
   toast('已退出登录');
 });
 
-if (isLoggedIn()) showApp();
+// 清理旧版本可能残留的 localStorage 登录标记（现已改用 sessionStorage）
+localStorage.removeItem('jizhang_logged_in');
+
+// 自动恢复登录（sessionStorage，关闭页面后失效）
+if (isLoggedIn()) {
+  const acct = localStorage.getItem('jizhang_account') || '';
+  currentAcct = acct;
+  STORE_KEY = 'jizhang_data_' + simpleHash(acct);
+  data = loadData();
+  showApp();
+}
 
 /* ======================= Table rendering ======================= */
 function renderMonthSelect() {
@@ -471,13 +613,13 @@ function makeRow(row, idx) {
   tr.dataset.idx = idx;
   if (row.selected) tr.classList.add('selected');
   tr.innerHTML = `
-    <td class="check-cell"><input type="checkbox" class="row-check" ${row.selected?'checked':''} /></td>
-    <td><div class="cell" contenteditable="true" data-field="date">${row.date||''}</div></td>
-    <td><div class="cell" contenteditable="true" data-field="item">${row.item||''}</div></td>
-    <td><div class="cell" contenteditable="true" data-field="detail">${row.detail||''}</div></td>
-    <td><div class="cell amount-cell" contenteditable="true" data-field="amount">${row.amount||''}</div></td>
+    <td class="check-cell"><input type="checkbox" class="row-check" ${row.selected?'checked':''} tabindex="-1" /></td>
+    <td><div class="cell" contenteditable="true" data-field="date" tabindex="0">${row.date||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="item" tabindex="0">${row.item||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="detail" tabindex="0">${row.detail||''}</div></td>
+    <td><div class="cell amount-cell" contenteditable="true" data-field="amount" tabindex="0">${row.amount||''}</div></td>
     <td><div class="cum-cell" data-field="cum">${fmt(cum)}</div></td>
-    <td><div class="cell" contenteditable="true" data-field="note">${row.note||''}</div></td>
+    <td><div class="cell" contenteditable="true" data-field="note" tabindex="0">${row.note||''}</div></td>
   `;
   return tr;
 }
@@ -510,6 +652,30 @@ function updateCumulative(changedIdx) {
   $('#month-total').textContent = fmt(total);
   $('#cum-total').textContent = fmt(total);
 }
+
+// Tab 键：备注列 Tab 跳到下一行日期列，最后一行则新增一行
+$('#tbody').addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab' || e.shiftKey) return;
+  const cell = e.target.closest('.cell');
+  if (!cell) return;
+  if (cell.dataset.field !== 'note') return;
+  e.preventDefault();
+  const tr = cell.closest('tr');
+  const idx = Number(tr.dataset.idx);
+  const m = getMonth(currentYM());
+  let nextRow = $$('#tbody tr')[idx + 1];
+  if (!nextRow) {
+    // 最后一行，新增一行
+    m.rows.push({date:'',item:'',detail:'',amount:'',note:'',selected:false});
+    saveData();
+    renderTable();
+    nextRow = $$('#tbody tr')[idx + 1];
+  }
+  if (nextRow) {
+    const nextCell = nextRow.querySelector('.cell[data-field="date"]');
+    if (nextCell) nextCell.focus();
+  }
+});
 
 // Paste handler: supports WPS/Excel tab-separated paste
 $('#tbody').addEventListener('paste', (e) => {
@@ -596,7 +762,58 @@ $('#month-select').addEventListener('change', (e) => {
 });
 
 /* ---- Save / Delete ---- */
-$('#save-btn').addEventListener('click', () => { saveData(); toast('已保存 ✓'); });
+$('#save-btn').addEventListener('click', () => { saveData(); cloudPush(); toast('已保存并同步 ✓'); });
+
+/* ---- Copy to WPS ---- */
+$('#copy-btn').addEventListener('click', () => {
+  const m = getMonth(currentYM());
+  const checked = $$('.row-check:checked');
+  let rowsToCopy;
+  if (checked.length > 0) {
+    rowsToCopy = checked.map(cb => {
+      const tr = cb.closest('tr');
+      const idx = Number(tr.dataset.idx);
+      const r = m.rows[idx];
+      return r;
+    });
+  } else {
+    rowsToCopy = m.rows;
+  }
+  if (rowsToCopy.length === 0) { toast('没有数据可复制'); return; }
+  const header = ['日期','事项','明细','金额','备注'].join('\t');
+  const lines = rowsToCopy.map(r => [r.date||'', r.item||'', r.detail||'', r.amount||'', r.note||''].join('\t'));
+  const tsv = header + '\n' + lines.join('\n');
+  function doCopyFallback(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(tsv).then(() => {
+      toast(`已复制 ${rowsToCopy.length} 行到剪贴板，可粘贴到 WPS`);
+    }).catch(() => {
+      doCopyFallback(tsv);
+      toast(`已复制 ${rowsToCopy.length} 行，可粘贴到 WPS`);
+    });
+  } else {
+    doCopyFallback(tsv);
+    toast(`已复制 ${rowsToCopy.length} 行，可粘贴到 WPS`);
+  }
+});
+
+/* ---- FAB add row (mobile) ---- */
+$('#fab-add').addEventListener('click', () => {
+  const m = getMonth(currentYM());
+  m.rows.push({date:'',item:'',detail:'',amount:'',note:'',selected:false});
+  saveData(); renderTable();
+  setTimeout(() => {
+    const lastRow = $('#tbody').lastElementChild;
+    if (lastRow) { const cell = lastRow.querySelector('.cell'); if (cell) cell.focus(); }
+    $('#tbody').parentElement.scrollTop = $('#tbody').parentElement.scrollHeight;
+  }, 50);
+});
 
 $('#del-btn').addEventListener('click', () => {
   const m = getMonth(currentYM());
@@ -748,6 +965,46 @@ $('#link-paste').addEventListener('click', () => {
 $('#link-wechat').addEventListener('click', () => toast('请在微信中打开此链接分享给朋友审批'));
 $('#link-douyin').addEventListener('click', () => toast('请在抖音中打开此链接分享给朋友审批'));
 
+/* ---- WeChat share & copy link ---- */
+function buildApprovalShareLink() {
+  const amount = $('#appr-amount').value || '0';
+  const reason = $('#appr-reason').value || '';
+  const names = approvers.filter(a => a.name.trim()).map(a => a.name).join(',');
+  const params = new URLSearchParams({ a: amount, r: reason, n: names, t: Date.now() });
+  return location.origin + location.pathname + '?appr=' + btoa(params.toString());
+}
+
+$('#share-wechat').addEventListener('click', async () => {
+  const amount = Number($('#appr-amount').value);
+  const reason = $('#appr-reason').value;
+  const validApprovers = approvers.filter(a => a.name.trim());
+  if (!amount) { toast('请先填写金额'); return; }
+  if (validApprovers.length === 0) { toast('请至少添加1位审批人'); return; }
+  const shareLink = buildApprovalShareLink();
+  const shareText = `果果流水账审批请求\n金额：¥${amount}\n理由：${reason || '无'}\n审批人：${validApprovers.map(a=>a.name).join('、')}\n请点击链接审批：${shareLink}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: '果果流水账审批', text: shareText, url: shareLink }); }
+    catch(e) {}
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = shareText; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+    toast('已复制审批信息，请粘贴到微信发送给好友');
+  }
+});
+
+$('#share-link').addEventListener('click', () => {
+  const shareLink = buildApprovalShareLink();
+  const ta = document.createElement('textarea');
+  ta.value = shareLink; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e){}
+  document.body.removeChild(ta);
+  toast('审批链接已复制');
+});
+
 $('#submit-appr').addEventListener('click', () => {
   const amount = Number($('#appr-amount').value);
   const reason = $('#appr-reason').value;
@@ -844,9 +1101,17 @@ document.addEventListener('click', (e) => {
 });
 
 /* ======================= Init ======================= */
+let pollTimer = null;
 function initApp() {
   renderTable();
   renderApprovers();
+  // 登录后先拉取云端数据
+  cloudPullAndRender();
+  // 每30秒轮询云端，实现跨设备实时同步
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(() => {
+    if (currentAcct) cloudPullAndRender();
+  }, 30000);
 }
 
 /* ---- Service Worker (Blob) ---- */
